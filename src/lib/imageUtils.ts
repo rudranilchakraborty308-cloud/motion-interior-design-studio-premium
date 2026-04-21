@@ -1,62 +1,47 @@
 /**
- * Compresses and resizes an image file.
- * - PNG files keep PNG format to preserve transparency (important for logos).
- * - All other images are converted to JPEG at 0.82 quality for good balance.
- * - Max width: 1400px (sufficient for heroes, about images, etc.)
+ * Utility to compress images on the client side before uploading to Supabase.
+ * This ensures the database stays lean and the website stays fast.
  */
-export const compressImage = (file: File, maxWidth = 1400): Promise<string> => {
+
+export async function compressImage(file: File, isLogo: boolean = false): Promise<string> {
   return new Promise((resolve, reject) => {
-    const isPng = file.type === 'image/png';
     const reader = new FileReader();
     reader.readAsDataURL(file);
-
-    reader.onload = (e) => {
+    reader.onload = (event) => {
       const img = new Image();
-      img.src = e.target?.result as string;
-
+      img.src = event.target?.result as string;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const scale = Math.min(1, maxWidth / img.width);
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
+        let width = img.width;
+        let height = img.height;
 
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject(new Error('Canvas context unavailable'));
-
-        // Fill white background only for JPEG (PNG supports transparency)
-        if (!isPng) {
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Configuration
+        const MAX_WIDTH = isLogo ? 600 : 1400; // Logos need less width but better clarity
+        const QUALITY = isLogo ? 0.95 : 0.82; // Higher quality for logos
+        
+        if (width > MAX_WIDTH) {
+          height = (MAX_WIDTH / width) * height;
+          width = MAX_WIDTH;
         }
 
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.width = width;
+        canvas.height = height;
 
-        // PNG for logos (preserves transparency), JPEG for photos
-        const dataUrl = isPng
-          ? canvas.toDataURL('image/png')
-          : canvas.toDataURL('image/jpeg', 0.82);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject('Failed to get canvas context');
+        
+        // Draw image to canvas
+        ctx.drawImage(img, 0, 0, width, height);
 
+        // For logos, we might want to preserve transparency (PNG)
+        // For general photos, we use JPEG for better compression
+        const outputType = isLogo && file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        
+        const dataUrl = canvas.toDataURL(outputType, QUALITY);
         resolve(dataUrl);
       };
-
-      img.onerror = () => reject(new Error('Failed to load image. Please try a different file.'));
+      img.onerror = (err) => reject(err);
     };
-
-    reader.onerror = () => reject(new Error('Failed to read file. Please try again.'));
+    reader.onerror = (err) => reject(err);
   });
-};
-
-/**
- * Compress specifically for logos — smaller size and preserves transparency.
- * Max width: 600px is more than enough for a logo and keeps the Base64 string small.
- */
-export const compressLogo = (file: File): Promise<string> => {
-  return compressImage(file, 600);
-};
-
-/**
- * Compress specifically for portfolio thumbnails — smaller size for faster loading.
- */
-export const compressPortfolioImage = (file: File): Promise<string> => {
-  return compressImage(file, 900);
-};
+}
