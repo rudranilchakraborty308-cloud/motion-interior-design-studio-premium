@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:wght@700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+@import "tailwindcss";
+
+
+@theme {
+  --color-pale-white: #FFFEFA;
+  --color-alabaster: #F4F4E7;
+  --color-black: #000000;
+  --color-khaki: #C9AD94;
+  --color-dark-khaki: #B1967E;
+  --color-gold: #DBB468;
+  --color-dark-gold: #B57700;
+  --color-pale-green: #EDFAE2;
+  --color-milk-white: #F9FFF4;
+  
+  --font-sans: 'Raleway', sans-serif;
+  --font-serif: 'Cormorant Garamond', serif;
+}
+
+@layer base {
+  :root {
+    --bg: #FFFEFA;
+    --text: #000000;
+  }
+  
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Cormorant Garamond', serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Raleway', sans-serif;
+  }
+}
+
+/* Custom scrolling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FFFEFA; 
+}
+::-webkit-scrollbar-thumb {
+  background: #C9AD94; 
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B1967E; 
+}
+
+/* =========================================
+   Brand Name — Fixed Premium Style
+   Applied to the business name in the header.
+   These styles are hardcoded and must NOT be
+   changed by admin panel content updates.
+   ========================================= */
+.brand-name {
+  font-family: 'Playfair Display', 'Didot', 'Georgia', serif !important;
+  font-weight: 700 !important;
+  font-size: 26px !important;
+  letter-spacing: 1px !important;
+  color: #C5A059 !important;
+  text-transform: none !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: #C5A059 !important;
+  text-shadow: none !important;
+  line-height: 1.1;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .brand-name {
+    font-size: 32px !important;
+  }
+}
