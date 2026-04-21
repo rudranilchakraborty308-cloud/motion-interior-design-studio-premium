@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2, Plus, Trash2, ImagePlus, X, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { compressImage, compressPortfolioImage } from '../lib/imageUtils';
+import { compressImage } from '../lib/imageUtils';
 
 export default function DashboardPortfolio() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -90,7 +90,7 @@ export default function DashboardPortfolio() {
 
       const newImages: string[] = [];
       for (let i = 0; i < files.length; i++) {
-        const compressed = await compressPortfolioImage(files[i]);
+        const compressed = await compressImage(files[i]);
         newImages.push(compressed);
       }
 
@@ -125,7 +125,7 @@ export default function DashboardPortfolio() {
     
     setIsUploading(true);
     try {
-      const base64Image = await compressPortfolioImage(imageFile);
+      const base64Image = await compressImage(imageFile);
 
       const newProj = {
         title,

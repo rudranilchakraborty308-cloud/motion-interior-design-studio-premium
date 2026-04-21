@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2, Save, Globe, Layout, Info, Wrench, Phone as FooterIcon, Image as ImageIcon, X, AlertCircle } from 'lucide-react';
-import { compressImage, compressLogo } from '../lib/imageUtils';
+import { compressImage } from '../lib/imageUtils';
 
 type TabType = 'branding' | 'hero' | 'about' | 'services' | 'footer';
 
@@ -175,7 +175,7 @@ export default function DashboardSettings() {
       // 1. Process Logo
       let finalLogo = currentLogo;
       if (logoFile) {
-        finalLogo = await compressLogo(logoFile);
+        finalLogo = await compressImage(logoFile, true);
         setCurrentLogo(finalLogo);
         setLogoPreview('');
         setLogoFile(null);

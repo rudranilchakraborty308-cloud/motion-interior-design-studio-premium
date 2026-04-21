@@ -1,77 +1,94 @@
-import React, { ReactNode } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, CalendarRange, Image as ImageIcon, FileText, Settings, MessageSquare, LogOut, Globe } from 'lucide-react';
+import React from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  CalendarCheck, 
+  Image as ImageIcon, 
+  Settings, 
+  LogOut, 
+  Quote,
+  Menu,
+  X,
+  ChevronRight
+} from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useState } from 'react';
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
   const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const menuItems = [
+    { icon: LayoutDashboard, label: 'Content', path: '/admin/content' },
+    { icon: CalendarCheck, label: 'Bookings', path: '/admin/bookings' },
+    { icon: ImageIcon, label: 'Portfolio', path: '/admin/portfolio' },
+    { icon: Quote, label: 'Testimonials', path: '/admin/testimonials' },
+    { icon: Settings, label: 'Settings', path: '/admin/settings' },
+  ];
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/');
+    navigate('/admin');
   };
 
-  const navItems = [
-    { name: 'Bookings', path: '/admin/bookings', icon: CalendarRange },
-    { name: 'Portfolio', path: '/admin/portfolio', icon: ImageIcon },
-    { name: 'Site Content', path: '/admin/settings', icon: Settings },
-    { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquare },
-  ];
-
   return (
-    <div className="min-h-screen bg-alabaster flex flex-col md:flex-row font-sans">
-      
+    <div className="min-h-screen bg-pale-white flex flex-col md:flex-row font-sans">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-6 bg-white border-b border-stone-100 z-50">
+         <h1 className="font-serif text-xl font-bold tracking-tighter">STUDIO ADMIN</h1>
+         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2">
+            {isSidebarOpen ? <X /> : <Menu />}
+         </button>
+      </div>
+
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-black text-pale-white flex flex-col shadow-2xl z-20">
-        <div className="p-8 border-b border-white/10">
-          <div className="text-xl font-sans tracking-widest uppercase font-light truncate">
-            Studi<span className="text-dark-khaki">o</span>
-          </div>
-          <p className="text-[10px] uppercase tracking-widest text-white/40 mt-2">Admin Portal</p>
+      <aside className={`
+        fixed inset-0 z-40 bg-white md:relative md:flex md:flex-col w-full md:w-72 border-r border-stone-100 p-8 transform transition-transform duration-500 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="mb-16 hidden md:block">
+          <h1 className="font-serif text-2xl font-black tracking-tighter text-black">STUDIO</h1>
+          <p className="text-[10px] uppercase tracking-[0.4em] text-stone-400 mt-2">Master Controls</p>
         </div>
-        
-        <nav className="flex-1 py-8 px-4 space-y-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.name}
+
+        <nav className="flex-grow space-y-3">
+          {menuItems.map((item) => (
+            <Link
+              key={item.path}
               to={item.path}
-              className={({ isActive }) => 
-                `flex items-center gap-3 px-4 py-3 text-xs tracking-widest uppercase transition-colors rounded-none ${
-                  isActive ? 'bg-dark-khaki text-black font-semibold' : 'text-pale-white/70 hover:bg-white/10 hover:text-white'
-                }`
-              }
+              onClick={() => setIsSidebarOpen(false)}
+              className={`
+                group flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-300
+                ${location.pathname === item.path 
+                  ? 'bg-black text-white shadow-xl translate-x-2' 
+                  : 'text-stone-400 hover:text-black hover:bg-stone-50'}
+              `}
             >
-              <item.icon className="w-4 h-4" />
-              {item.name}
-            </NavLink>
+              <div className="flex items-center gap-4">
+                <item.icon className={`w-5 h-5 transition-colors ${location.pathname === item.path ? 'text-dark-khaki' : ''}`} />
+                <span className="text-[11px] uppercase tracking-widest font-bold">{item.label}</span>
+              </div>
+              <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${location.pathname === item.path ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`} />
+            </Link>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-white/10 space-y-2">
-          <a 
-            href="/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 px-4 py-3 text-xs tracking-widest uppercase text-pale-white/70 hover:bg-white/10 hover:text-white transition-colors"
-          >
-            <Globe className="w-4 h-4" />
-            View Live Site
-          </a>
+        <div className="pt-8 border-t border-stone-100 mt-8">
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-xs tracking-widest uppercase text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+            className="w-full flex items-center gap-4 px-6 py-4 text-stone-400 hover:text-red-500 transition-colors"
           >
-            <LogOut className="w-4 h-4" />
-            Sign Out
+            <LogOut className="w-5 h-5" />
+            <span className="text-[11px] uppercase tracking-widest font-bold">Exit Portal</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-h-screen overflow-y-auto">
+      {/* Main Content */}
+      <main className="flex-grow overflow-y-auto bg-[#FAFAFA]">
         {children}
       </main>
-      
     </div>
   );
 }

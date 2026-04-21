@@ -1,56 +1,56 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { User } from '@supabase/supabase-js';
-import { Loader2 } from 'lucide-react';
-import AdminLayout from './AdminLayout';
 import AdminLogin from './AdminLogin';
+import AdminLayout from './AdminLayout';
 import DashboardBookings from './DashboardBookings';
-import DashboardPortfolio from './DashboardPortfolio';
 import DashboardContent from './DashboardContent';
+import DashboardPortfolio from './DashboardPortfolio';
 import DashboardSettings from './DashboardSettings';
 import DashboardTestimonials from './DashboardTestimonials';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminApp() {
-  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
+      setSession(session);
+      checkAuth(session?.user?.email);
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      setLoading(false);
+      setSession(session);
+      checkAuth(session?.user?.email);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-alabaster flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-dark-khaki" />
-      </div>
-    );
-  }
+  const checkAuth = (email: string | undefined) => {
+    // Only the owner can access the admin panel
+    const allowedEmail = 'rudranilchakraborty308@gmail.com';
+    setIsAuthorized(email === allowedEmail);
+  };
 
-  // Strict check for admin email
-  if (!user || user.email !== 'rudranilchakraborty308@gmail.com') {
-    return <AdminLogin currentUser={user} />;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-pale-white"><Loader2 className="w-8 h-8 animate-spin text-dark-khaki" /></div>;
+
+  if (!session || !isAuthorized) {
+    return <AdminLogin />;
   }
 
   return (
     <AdminLayout>
       <Routes>
-        <Route path="/" element={<Navigate to="bookings" replace />} />
-        <Route path="bookings" element={<DashboardBookings />} />
-        <Route path="portfolio" element={<DashboardPortfolio />} />
-        <Route path="content" element={<DashboardContent />} />
-        <Route path="settings" element={<DashboardSettings />} />
-        <Route path="testimonials" element={<DashboardTestimonials />} />
+        <Route path="/" element={<Navigate to="/admin/content" replace />} />
+        <Route path="/bookings" element={<DashboardBookings />} />
+        <Route path="/content" element={<DashboardContent />} />
+        <Route path="/portfolio" element={<DashboardPortfolio />} />
+        <Route path="/testimonials" element={<DashboardTestimonials />} />
+        <Route path="/settings" element={<DashboardSettings />} />
       </Routes>
     </AdminLayout>
   );
